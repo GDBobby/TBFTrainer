@@ -21,22 +21,30 @@ int main()
 	bool leftClickDown = false;
 	bool rightClickDown = false;
 
-	sf::Clock slashTimer;
-	sf::Clock blockTimer;
+	//sf::Clock slashTimer;
+	//sf::Clock blockTimer;
 	int slashCounter = 0;
 	int blockCounter = 0;
+	int timeBetween = 0;
 
 	//TextButton(std::string t, sf::Vector2f pos, int charSize, sf::Color bgColor, sf::Color tColor, sf::Font& font, float butSz)
-	TextButton slashPMButt("BF here", { 200,300 }, 24, sf::Color::Green, sf::Color::Red, bst, 20);
-	slashPMButt.setPosition({340,300});
+	//TextButton slashPMButt("BF here", { 200,300 }, 24, sf::Color::Green, sf::Color::Red, bst, 20);
+	//slashPMButt.setPosition({340,300});
 
 	//Label(sf::Vector2f pos, int fontSz, std::string string, char relation, sf::Font& font, sf::Vector2f relationSize = { 100,0 })
-	Label slashDown({240, 200}, 24, "left click up", 4, bst);
+	Label slashDown({ 240, 200 }, 24, "left click up", 4, bst);
 	Label slashTimeL({ 260,220 }, 24, "0", 4, bst);
 	Label blockDown({ 460, 200 }, 24, "right click up", 4, bst);
 	Label blockTimeL({ 480, 220 }, 24, "0", 4, bst);
 	Label FPSLabel({ 750, 10 }, 24, "FPS : ", 0, bst, { 50,0 });
 	Label FPSCounter({ 750, 10 }, 24, "0", 4, bst);
+
+	Label betweenLabel({ 400,300 }, 24, "Time between slash/block : ", 0, bst);
+	Label timeBetweenSB({ 400,300 }, 24, "0", 4, bst);
+
+	Label fastestPossLabel({ 400,400 }, 24, "Fastest possible TBF : ", 0, bst);
+	Label fastestPossible({ 400, 400 }, 24, "0", 4, bst);
+
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 		slashDown.setText("left click down");
 	}
@@ -59,18 +67,28 @@ int main()
 			}
 			case sf::Event::MouseButtonPressed: {
 				if (event.mouseButton.button == sf::Mouse::Left) {
-					slashPMButt.isMouseOver(mainWindow);
+					//slashPMButt.isMouseOver(mainWindow);
 					leftClickDown = true;
 					slashDown.setText("left click down");
-					slashTimer.restart();
+					//slashTimer.restart();
 					slashCounter = 0;
+					if (rightClickDown) {
+
+					}
+
 				}
 				if (event.mouseButton.button == sf::Mouse::Right) {
 					rightClickDown = true;
-					slashPMButt.isMouseOver(mainWindow);
-					blockTimer.restart();
+					//slashPMButt.isMouseOver(mainWindow);
+					//blockTimer.restart();
 					blockDown.setText("right click down");
 					blockCounter = 0;
+
+					if (leftClickDown) {
+						timeBetweenSB.setText(std::to_string(slashCounter));
+						timeBetween = slashCounter;
+					}
+
 				}
 				break;
 			}
@@ -86,8 +104,9 @@ int main()
 				if (event.mouseButton.button == sf::Mouse::Right) {
 					rightClickDown = false;
 					blockDown.setText("right click up");
-					blockTimeL.setText(std::to_string(static_cast<int>(round(1000000 / blockTimer.restart().asMicroseconds()))));
+					//blockTimeL.setText(std::to_string(static_cast<int>(round(1000000 / blockTimer.restart().asMicroseconds()))));
 					blockTimeL.setText(std::to_string(blockCounter));
+					fastestPossible.setText(std::to_string(250 * 60 / (blockCounter + timeBetween + 60)));
 				}
 				break;
 			}
@@ -98,7 +117,7 @@ int main()
 		}
 		mainWindow.clear(sf::Color::White);
 
-		slashPMButt.draw(mainWindow);
+		//slashPMButt.draw(mainWindow);
 
 		slashDown.drawTo(mainWindow);
 		slashTimeL.drawTo(mainWindow);
@@ -107,6 +126,13 @@ int main()
 
 		FPSLabel.drawTo(mainWindow);
 		FPSCounter.drawTo(mainWindow);
+
+
+		timeBetweenSB.drawTo(mainWindow);
+		betweenLabel.drawTo(mainWindow);
+
+		fastestPossible.drawTo(mainWindow);
+		fastestPossLabel.drawTo(mainWindow);
 
 		mainWindow.display();
 

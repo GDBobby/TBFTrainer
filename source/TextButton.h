@@ -86,6 +86,9 @@ public:
 	void setActivity(bool activity) {
 		isActive = activity;
 	}
+	sf::String getText() {
+		label.getString();
+	}
 
 	void drawTo(sf::RenderWindow& window) {
 		if (isActive) {
