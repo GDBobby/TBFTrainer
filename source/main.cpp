@@ -70,6 +70,7 @@ int main()
 					slashPMButt.isMouseOver(mainWindow);
 					blockTimer.restart();
 					blockDown.setText("right click down");
+					blockCounter = 0;
 				}
 				break;
 			}
@@ -86,6 +87,7 @@ int main()
 					rightClickDown = false;
 					blockDown.setText("right click up");
 					blockTimeL.setText(std::to_string(static_cast<int>(round(1000000 / blockTimer.restart().asMicroseconds()))));
+					blockTimeL.setText(std::to_string(blockCounter));
 				}
 				break;
 			}
