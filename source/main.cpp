@@ -36,14 +36,17 @@ int main()
 
 	bool slashActive = false;
 	bool blockActive = false;
-	bool failPossible = false;
+	//bool failPossible = false;
 	bool metronomeActive = false;
+	bool idleActive = false;
 
 	int slashCounter = 0;
 	int blockRelCounter = 0;
 	int blockRecovery = 0;
-	int failCounter = 0;
+	//int failCounter = 0;
 	int timeBetween = 0;
+	int idleCounter = 0;
+
 	int metronomeCounter = 0;
 
 	int metronomeReset = 75;
@@ -58,8 +61,12 @@ int main()
 	Label betweenLabel({ 400,300 }, 24, "Time between slash/block : ", 0, bst);
 	Label timeBetweenSB({ 400,300 }, 24, "0", 4, bst);
 
-	Label fastestPossLabel({ 400,400 }, 24, "Fastest possible TBF : ", 0, bst);
+	Label fastestPossLabel({ 400,400 }, 24, "Current Speed : ", 0, bst);
 	Label fastestPossible({ 400, 400 }, 24, "0", 4, bst);
+
+	Label timeIdleSlashLabel({ 400,340 }, 24, "Time between block drop and slash : ", 0, bst);
+	Label timeIdleSlash({ 400,340 }, 24, "0", 4, bst);
+
 
 	//Textbox(sf::Vector2f pos, int fontSize, sf::Vector2f boxSize, sf::Color color, int limitInit, std::string string, bool isEditable)
 	Textbox metronomeSpeed({ 300,80 }, 18, { 100,20 }, sf::Color::White, 3, "200", true);
@@ -79,6 +86,7 @@ int main()
 
 	while (mainWindow.isOpen())
 	{
+		idleCounter += idleActive;
 		slashCounter += slashActive;
 		blockRelCounter += sf::Mouse::isButtonPressed(sf::Mouse::Right) * blockActive;
 
@@ -99,6 +107,10 @@ int main()
 			if (!blockActive && !slashActive && !leftClickInit && !sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
 				slashActive = true;
 				slashCounter = 0;
+				if (idleActive) {
+					idleActive = false;
+					timeIdleSlash.setText(std::to_string(idleCounter));
+				}
 			}
 
 
@@ -145,10 +157,15 @@ int main()
 			
 			blockDown.setText("right click up");
 			blockRecovery += blockActive;
-			blockActive = blockRecovery < 60;
 			if (blockRecovery >= 60) {
+				std::cout << idleCounter << " " << slashCounter << " " << blockRelCounter << std::endl;
+
+				fastestPossible.setText(std::to_string((250 * 60) / (idleCounter + slashCounter + blockRelCounter + 59 + gender)));
+				blockRecovery = 0;
 				blockActive = false;
 				rightClickInit = false;
+				idleActive = true;
+				idleCounter = 0;
 			}
 		}
 
@@ -180,28 +197,6 @@ int main()
 			case sf::Event::TextEntered: {
 				metronomeSpeed.typedOn(event);
 			}
-			/*
-			case sf::Event::MouseButtonReleased: {
-				if (event.mouseButton.button == sf::Mouse::Left) {
-					leftClickDown = false;
-					slashDown.setText("left click up");
-					//slashTimeL.setText(std::to_string(static_cast<int>(round(1000000 / slashTimer.restart().asMicroseconds()))));
-					slashTimeL.setText(std::to_string(slashCounter));
-
-					
-				}
-				if (event.mouseButton.button == sf::Mouse::Right) {
-					rightClickDown = false;
-					failCounter = 0;
-					failPossible = true;
-					blockDown.setText("right click up");
-					//blockTimeL.setText(std::to_string(static_cast<int>(round(1000000 / blockTimer.restart().asMicroseconds()))));
-					blockTimeL.setText(std::to_string(blockCounter));
-					fastestPossible.setText(std::to_string(250 * 60 / (blockCounter + timeBetween + 60)));
-				}
-				break;
-			}
-			*/
 			default: {
 				break;
 			}
@@ -228,6 +223,9 @@ int main()
 
 		SlashFail.drawTo(mainWindow);
 		SlashFailLabel.drawTo(mainWindow);
+
+		timeIdleSlash.drawTo(mainWindow);
+		timeIdleSlashLabel.drawTo(mainWindow);
 
 		metronomeSpeed.drawTo(mainWindow);
 		metronomeCheck.draw(mainWindow);
