@@ -3,6 +3,7 @@
 #include <SFML/Window.hpp>
 #include "TextButton.h"
 #include <math.h>
+#include <SFML/Audio.hpp>
 
 const int mainWidth = 800;
 const int mainHeight = 640;
@@ -11,27 +12,42 @@ int main()
 {
 	sf::RenderWindow mainWindow(sf::VideoMode(mainWidth, mainHeight), "Bobbys TBF Trainer");
 	mainWindow.setFramerateLimit(250);
+
 	sf::Font bst;
 	bst.loadFromFile("bahnschrift.ttf");
+
+	sf::SoundBuffer metronome;
+	if (!metronome.loadFromFile("metronome.wav")) {
+		std::cout << "failed to load sound";
+		return -1;
+	}
+	sf::Sound sound;
+	sound.setBuffer(metronome);
 
 
 	sf::Clock fpsTimer;
 	float fpsElapsed = 0;
 
-	bool leftClickDown = false;
-	bool rightClickDown = false;
+	bool leftClickInit = false;
+	bool rightClickInit = false;
 
-	//sf::Clock slashTimer;
-	//sf::Clock blockTimer;
+	bool gender = true; //female is true, male is false
+
+
+	bool slashActive = false;
+	bool blockActive = false;
+	bool failPossible = false;
+	bool metronomeActive = false;
+
 	int slashCounter = 0;
-	int blockCounter = 0;
+	int blockRelCounter = 0;
+	int blockRecovery = 0;
+	int failCounter = 0;
 	int timeBetween = 0;
+	int metronomeCounter = 0;
 
-	//TextButton(std::string t, sf::Vector2f pos, int charSize, sf::Color bgColor, sf::Color tColor, sf::Font& font, float butSz)
-	//TextButton slashPMButt("BF here", { 200,300 }, 24, sf::Color::Green, sf::Color::Red, bst, 20);
-	//slashPMButt.setPosition({340,300});
+	int metronomeReset = 75;
 
-	//Label(sf::Vector2f pos, int fontSz, std::string string, char relation, sf::Font& font, sf::Vector2f relationSize = { 100,0 })
 	Label slashDown({ 240, 200 }, 24, "left click up", 4, bst);
 	Label slashTimeL({ 260,220 }, 24, "0", 4, bst);
 	Label blockDown({ 460, 200 }, 24, "right click up", 4, bst);
@@ -45,17 +61,98 @@ int main()
 	Label fastestPossLabel({ 400,400 }, 24, "Fastest possible TBF : ", 0, bst);
 	Label fastestPossible({ 400, 400 }, 24, "0", 4, bst);
 
+	//Textbox(sf::Vector2f pos, int fontSize, sf::Vector2f boxSize, sf::Color color, int limitInit, std::string string, bool isEditable)
+	Textbox metronomeSpeed({ 300,80 }, 18, { 100,20 }, sf::Color::White, 3, "200", true);
+	metronomeSpeed.setFont(bst);
+
+	//checkBox(std::string string, sf::Vector2f pos, sf::Font& font) {
+	checkBox metronomeCheck("metronome", { 300, 100 }, bst);
+
+
+	Label SlashFailLabel({ 400, 140 }, 24, "slash : ", 0, bst);
+	Label SlashFail({ 400, 140 }, 24, "fail", 4, bst);
+
+
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 		slashDown.setText("left click down");
 	}
 
 	while (mainWindow.isOpen())
 	{
-		//fpsElapsed = fpsTimer.restart().asMicroseconds();
+		slashCounter += slashActive;
+		blockRelCounter += sf::Mouse::isButtonPressed(sf::Mouse::Right) * blockActive;
+
+		metronomeCounter++;
+		if (metronomeCounter >= metronomeReset && metronomeCheck.getChecked()) {
+			sound.play();
+			metronomeCounter = 0;
+		}
 
 		FPSCounter.setText(std::to_string(static_cast<int>(round(1000000 / fpsTimer.restart().asMicroseconds()))));
-		slashCounter += leftClickDown;
-		blockCounter += rightClickDown;
+
+		//SlashFail.setText(std::to_string(failPossible));
+
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+			
+			slashDown.setText("left click down");
+			
+			if (!blockActive && !slashActive && !leftClickInit && !sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+				slashActive = true;
+				slashCounter = 0;
+			}
+
+
+			leftClickInit = true;
+		}
+		else {
+			slashDown.setText("left click up");
+			if (leftClickInit) {
+				slashTimeL.setText(std::to_string(slashCounter));
+			}
+			leftClickInit = slashActive;
+			if (slashCounter > 145) {
+				slashActive = false;
+			}
+		}
+		
+
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+			blockDown.setText("right click down");
+
+			if (!blockActive && !rightClickInit) {
+				blockRecovery = 0;
+				blockRelCounter = 0;
+				blockActive = true;
+				if (!slashActive) {
+					SlashFail.setText("fail");
+					SlashFail.setTextColor(sf::Color::Red);
+				}
+				else {
+					timeBetweenSB.setText(std::to_string(slashCounter));
+					SlashFail.setText("pass");
+					SlashFail.setTextColor(sf::Color::Black);
+				}
+
+				slashActive = false;
+			}
+			
+			rightClickInit = true;
+		}
+		else {
+			if (rightClickInit && blockActive) {
+				blockTimeL.setText(std::to_string(blockRelCounter));
+			}
+			
+			blockDown.setText("right click up");
+			blockRecovery += blockActive;
+			blockActive = blockRecovery < 60;
+			if (blockRecovery >= 60) {
+				blockActive = false;
+				rightClickInit = false;
+			}
+		}
+
+
 
 		sf::Event event;
 		while (mainWindow.pollEvent(event))
@@ -65,33 +162,25 @@ int main()
 				mainWindow.close();
 				break;
 			}
+
+			
 			case sf::Event::MouseButtonPressed: {
 				if (event.mouseButton.button == sf::Mouse::Left) {
-					//slashPMButt.isMouseOver(mainWindow);
-					leftClickDown = true;
-					slashDown.setText("left click down");
-					//slashTimer.restart();
-					slashCounter = 0;
-					if (rightClickDown) {
-
+					metronomeCheck.isMouseOver(mainWindow);
+					if (metronomeCheck.getChecked()) {
+						metronomeReset = 60 * 250 / stoi(metronomeSpeed.getText());
 					}
 
-				}
-				if (event.mouseButton.button == sf::Mouse::Right) {
-					rightClickDown = true;
-					//slashPMButt.isMouseOver(mainWindow);
-					//blockTimer.restart();
-					blockDown.setText("right click down");
-					blockCounter = 0;
-
-					if (leftClickDown) {
-						timeBetweenSB.setText(std::to_string(slashCounter));
-						timeBetween = slashCounter;
-					}
+					//metronomeSpeed.setActivity(metronomeSpeed.isMouseOver(mainWindow));
+					metronomeSpeed.isMouseOver(mainWindow);
 
 				}
 				break;
 			}
+			case sf::Event::TextEntered: {
+				metronomeSpeed.typedOn(event);
+			}
+			/*
 			case sf::Event::MouseButtonReleased: {
 				if (event.mouseButton.button == sf::Mouse::Left) {
 					leftClickDown = false;
@@ -103,6 +192,8 @@ int main()
 				}
 				if (event.mouseButton.button == sf::Mouse::Right) {
 					rightClickDown = false;
+					failCounter = 0;
+					failPossible = true;
 					blockDown.setText("right click up");
 					//blockTimeL.setText(std::to_string(static_cast<int>(round(1000000 / blockTimer.restart().asMicroseconds()))));
 					blockTimeL.setText(std::to_string(blockCounter));
@@ -110,6 +201,7 @@ int main()
 				}
 				break;
 			}
+			*/
 			default: {
 				break;
 			}
@@ -133,6 +225,12 @@ int main()
 
 		fastestPossible.drawTo(mainWindow);
 		fastestPossLabel.drawTo(mainWindow);
+
+		SlashFail.drawTo(mainWindow);
+		SlashFailLabel.drawTo(mainWindow);
+
+		metronomeSpeed.drawTo(mainWindow);
+		metronomeCheck.draw(mainWindow);
 
 		mainWindow.display();
 

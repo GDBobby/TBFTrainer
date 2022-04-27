@@ -89,6 +89,9 @@ public:
 	sf::String getText() {
 		label.getString();
 	}
+	void setTextColor(sf::Color color) {
+		label.setFillColor(color);
+	}
 
 	void drawTo(sf::RenderWindow& window) {
 		if (isActive) {
@@ -827,7 +830,7 @@ private:
 
 public:
 	checkBox(std::string string, sf::Vector2f pos, sf::Font& font) {
-		checkTexture.loadFromFile("resources\\checkbox.png");
+		checkTexture.loadFromFile("checkbox.png");
 		uncheckedSprite.setTexture(checkTexture);
 		uncheckedSprite.setTextureRect({ 0,0,16,16 });
 		checkedSprite.setTexture(checkTexture);
