@@ -115,9 +115,13 @@ int WinMain()
 				if (idleActive) {
 					idleActive = false;
 					timeIdleSlash.setText(std::to_string(idleCounter));
+					timeIdleSlash.setTextColor(sf::Color::Black);
 				}
 			}
-
+			else if (blockActive && !leftClickInit) {
+				timeIdleSlash.setText(std::to_string(blockRecovery));
+				timeIdleSlash.setTextColor(sf::Color::Red);
+			}
 
 			leftClickInit = true;
 		}
