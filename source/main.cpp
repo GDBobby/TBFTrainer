@@ -4,11 +4,12 @@
 #include "TextButton.h"
 #include <math.h>
 #include <SFML/Audio.hpp>
+#include <SFML/Main.hpp>
 
 const int mainWidth = 800;
 const int mainHeight = 640;
 
-int main()
+int WinMain()
 {
 	sf::RenderWindow mainWindow(sf::VideoMode(mainWidth, mainHeight), "Bobbys TBF Trainer");
 	mainWindow.setFramerateLimit(250);
@@ -158,7 +159,6 @@ int main()
 			blockDown.setText("right click up");
 			blockRecovery += blockActive;
 			if (blockRecovery >= 60) {
-				std::cout << idleCounter << " " << slashCounter << " " << blockRelCounter << std::endl;
 
 				fastestPossible.setText(std::to_string((250 * 60) / (idleCounter + slashCounter + blockRelCounter + 59 + gender)));
 				blockRecovery = 0;
