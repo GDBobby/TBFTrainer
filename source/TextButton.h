@@ -827,6 +827,9 @@ private:
 	sf::Sprite checkedSprite;
 	sf::Text text;
 	bool isChecked = false;
+	sf::Vector2f position;
+	char relPos;
+	sf::Vector2f posDiff;
 
 public:
 	checkBox(std::string string, sf::Vector2f pos, sf::Font& font) {
@@ -845,8 +848,41 @@ public:
 
 		text.setFont(font);
 	}
-	void setPosition() {
+	void setPosition(sf::Vector2f pos, char relation, sf::Vector2f posDif = { 100,0 }) {
+		position = pos;
+		relPos = relation;
+		posDiff = posDif;
 
+		float offset = text.getLocalBounds().left + text.getLocalBounds().width + 5;
+		std::string coutString = text.getString();
+
+		switch (relPos) {
+		case 0:
+			//left
+			//label.setPosition({ pos.x - (stringLength * 2 / 3 * fontSize), pos.y });
+
+			text.setPosition({ pos.x - offset, pos.y });
+			break;
+
+		case 1:
+			//above
+			text.setPosition({ pos.x,pos.y - 20 });
+			break;
+
+		case 2:
+			//right
+			text.setPosition({ pos.x + posDif.x + 2, pos.y });
+			break;
+
+		case 3:
+			//below
+			text.setPosition({ pos.x,pos.y + 20 });
+			break;
+		case 4:
+			//no adjust
+			text.setPosition(pos);
+			break;
+		}
 	}
 
 	void setFont(sf::Font& font) {

@@ -4,10 +4,9 @@
 #include "TextButton.h"
 #include <math.h>
 #include <SFML/Audio.hpp>
-#include <SFML/Main.hpp>
 
-const int mainWidth = 800;
-const int mainHeight = 640;
+const int mainWidth = 400;
+const int mainHeight = 500;
 
 int WinMain()
 {
@@ -48,37 +47,42 @@ int WinMain()
 	int timeBetween = 0;
 	int idleCounter = 0;
 
+	int averageCounter = 0;
+	int averageSpeed = 0;
+
 	int metronomeCounter = 0;
 
 	int metronomeReset = 75;
 
-	Label slashDown({ 240, 200 }, 24, "left click up", 4, bst);
-	Label slashTimeL({ 260,220 }, 24, "0", 4, bst);
-	Label blockDown({ 460, 200 }, 24, "right click up", 4, bst);
-	Label blockTimeL({ 480, 220 }, 24, "0", 4, bst);
-	Label FPSLabel({ 750, 10 }, 24, "FPS : ", 0, bst, { 50,0 });
-	Label FPSCounter({ 750, 10 }, 24, "0", 4, bst);
-
-	Label betweenLabel({ 400,300 }, 24, "Time between slash/block : ", 0, bst);
-	Label timeBetweenSB({ 400,300 }, 24, "0", 4, bst);
-
-	Label fastestPossLabel({ 400,400 }, 24, "Current Speed : ", 0, bst);
-	Label fastestPossible({ 400, 400 }, 24, "0", 4, bst);
-
-	Label timeIdleSlashLabel({ 400,340 }, 24, "Time between block drop and slash : ", 0, bst);
-	Label timeIdleSlash({ 400,340 }, 24, "0", 4, bst);
+	Label slashDown({ mainWidth - 50, 180 }, 24, "left click up", 0, bst);
+	Label slashTimeL({ mainWidth - 50,180 }, 24, "0", 4, bst);
+	Label blockDown({ mainWidth - 50, 200 }, 24, "right click up", 0, bst);
+	Label blockTimeL({ mainWidth - 50, 200 }, 24, "0", 4, bst);
 
 
-	//Textbox(sf::Vector2f pos, int fontSize, sf::Vector2f boxSize, sf::Color color, int limitInit, std::string string, bool isEditable)
-	Textbox metronomeSpeed({ 300,80 }, 18, { 100,20 }, sf::Color::White, 3, "200", true);
+	Label FPSLabel({ mainWidth - 50, 0}, 24, "FPS : ", 0, bst, { 50,0 });
+	Label FPSCounter({ mainWidth - 50, 0}, 24, "0", 4, bst);
+
+	Label betweenLabel({ mainWidth - 50,300 }, 24, "Time between slash/block : ", 0, bst);
+	Label timeBetweenSB({ mainWidth - 50,300 }, 24, "0", 4, bst);
+
+	Label currentSpeedLabel({ mainWidth - 50,400 }, 24, "Current Speed : ", 0, bst);
+	Label currentSpeed({ mainWidth - 50, 400 }, 24, "0", 4, bst);
+
+	Label timeIdleSlashLabel({ mainWidth - 50,340 }, 24, "Time between block drop and slash : ", 0, bst);
+	Label timeIdleSlash({ mainWidth - 50,340 }, 24, "0", 4, bst);
+
+	Textbox metronomeSpeed({ mainWidth - 50,80 }, 18, { 40,20 }, sf::Color::White, 3, "200", true);
 	metronomeSpeed.setFont(bst);
+	checkBox metronomeCheck("metronome", { mainWidth - 50, 100 }, bst);
+	metronomeCheck.setPosition({ mainWidth - 50,95 }, 0);
 
-	//checkBox(std::string string, sf::Vector2f pos, sf::Font& font) {
-	checkBox metronomeCheck("metronome", { 300, 100 }, bst);
 
+	Label SlashFailLabel({ mainWidth - 60, 140 }, 24, "slash : ", 0, bst);
+	Label SlashFail({ mainWidth - 60, 140 }, 24, "fail", 4, bst);
 
-	Label SlashFailLabel({ 400, 140 }, 24, "slash : ", 0, bst);
-	Label SlashFail({ 400, 140 }, 24, "fail", 4, bst);
+	Label AverageLabel({ mainWidth - 50,420 }, 24, "Average Speed : ", 0, bst);
+	Label AverageSpeed({ mainWidth - 50, 420 }, 24, "0", 4, bst);
 
 
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -160,7 +164,11 @@ int WinMain()
 			blockRecovery += blockActive;
 			if (blockRecovery >= 60) {
 
-				fastestPossible.setText(std::to_string((250 * 60) / (idleCounter + slashCounter + blockRelCounter + 59 + gender)));
+				currentSpeed.setText(std::to_string((250 * 60) / (idleCounter + slashCounter + blockRelCounter + 59 + gender)));
+				averageCounter++;
+				averageSpeed += (250 * 60) / (idleCounter + slashCounter + blockRelCounter + 59 + gender);
+				//averageSpeed = ((averageSpeed * averageCounter - 1) + (250 * 60) / (idleCounter + slashCounter + blockRelCounter + 59 + gender)) / averageCounter;
+				AverageSpeed.setText(std::to_string(averageSpeed / averageCounter));
 				blockRecovery = 0;
 				blockActive = false;
 				rightClickInit = false;
@@ -218,8 +226,11 @@ int WinMain()
 		timeBetweenSB.drawTo(mainWindow);
 		betweenLabel.drawTo(mainWindow);
 
-		fastestPossible.drawTo(mainWindow);
-		fastestPossLabel.drawTo(mainWindow);
+		currentSpeedLabel.drawTo(mainWindow);
+		currentSpeed.drawTo(mainWindow);
+
+		AverageLabel.drawTo(mainWindow);
+		AverageSpeed.drawTo(mainWindow);
 
 		SlashFail.drawTo(mainWindow);
 		SlashFailLabel.drawTo(mainWindow);
