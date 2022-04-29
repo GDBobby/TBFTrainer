@@ -33,12 +33,15 @@ int WinMain()
 
 	bool gender = true; //female is true, male is false
 
-
+	bool jumpActive = false;
 	bool slashActive = false;
 	bool blockActive = false;
 	//bool failPossible = false;
 	bool metronomeActive = false;
 	bool idleActive = false;
+	bool jumpInit = false;
+
+	bool instantJumpReset = false;
 
 	int slashCounter = 0;
 	int blockRelCounter = 0;
@@ -50,6 +53,8 @@ int WinMain()
 	int averageCounter = 0;
 	int averageSpeed = 0;
 
+	int jumpCounter = 0;
+
 	int metronomeCounter = 0;
 
 	int metronomeReset = 75;
@@ -60,8 +65,15 @@ int WinMain()
 	Label blockTimeL({ mainWidth - 50, 200 }, 24, "0", 4, bst);
 
 
+
 	Label FPSLabel({ mainWidth - 50, 0}, 24, "FPS : ", 0, bst, { 50,0 });
 	Label FPSCounter({ mainWidth - 50, 0}, 24, "0", 4, bst);
+
+
+	checkBox jumpReset("instant jump reset", { mainWidth - 50, 260}, bst);
+	jumpReset.setPosition({ mainWidth - 50, 260 }, 0);
+	Label jumpSlashLabel({ mainWidth - 50,280 }, 24, "Time between jump/slash : ", 0, bst);
+	Label jumpSlash({ mainWidth - 50,280 }, 24, "0", 4, bst);
 
 	Label betweenLabel({ mainWidth - 50,300 }, 24, "Time between slash/block : ", 0, bst);
 	Label timeBetweenSB({ mainWidth - 50,300 }, 24, "0", 4, bst);
@@ -94,6 +106,8 @@ int WinMain()
 		idleCounter += idleActive;
 		slashCounter += slashActive;
 		blockRelCounter += sf::Mouse::isButtonPressed(sf::Mouse::Right) * blockActive;
+		jumpCounter += jumpActive;
+		//if (jumpInit) { std::cout << "jumpcounter after:jumpreset:jumpinit:jumpActive : " << jumpCounter << ":" << instantJumpReset << ":" << jumpInit << ":" << jumpActive << std::endl; }
 
 		metronomeCounter++;
 		if (metronomeCounter >= metronomeReset && metronomeCheck.getChecked()) {
@@ -112,6 +126,15 @@ int WinMain()
 			if (!blockActive && !slashActive && !leftClickInit && !sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
 				slashActive = true;
 				slashCounter = 0;
+				
+				if (instantJumpReset && jumpActive) {
+					jumpSlash.setText(std::to_string(jumpCounter));
+					//std::cout << "why here" << std::endl;
+					jumpActive = false;
+				}
+				else if (jumpActive) {
+					jumpSlash.setText(std::to_string(jumpCounter));
+				}
 				if (idleActive) {
 					idleActive = false;
 					timeIdleSlash.setText(std::to_string(idleCounter));
@@ -181,6 +204,15 @@ int WinMain()
 			}
 		}
 
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && !jumpInit) {
+			std::cout << "entered jump activation" << std::endl;
+			jumpInit = true;
+			jumpActive = true;
+			jumpCounter = 0;
+		}
+		else if (jumpCounter >= 185 || (!jumpActive && instantJumpReset && !sf::Keyboard::isKeyPressed(sf::Keyboard::Space))) {
+			jumpInit = false;
+		}
 
 
 		sf::Event event;
@@ -199,6 +231,8 @@ int WinMain()
 					if (metronomeCheck.getChecked()) {
 						metronomeReset = 60 * 250 / stoi(metronomeSpeed.getText());
 					}
+					jumpReset.isMouseOver(mainWindow);
+					instantJumpReset = jumpReset.getChecked();
 
 					//metronomeSpeed.setActivity(metronomeSpeed.isMouseOver(mainWindow));
 					metronomeSpeed.isMouseOver(mainWindow);
@@ -244,6 +278,10 @@ int WinMain()
 
 		metronomeSpeed.drawTo(mainWindow);
 		metronomeCheck.draw(mainWindow);
+
+		jumpSlash.drawTo(mainWindow);
+		jumpSlashLabel.drawTo(mainWindow);
+		jumpReset.draw(mainWindow);
 
 		mainWindow.display();
 
