@@ -29,11 +29,22 @@ private:
 	bool mouseUpdate = false;
 	char mouseUpdateFrames = 0;
 
+	char apmArray[15000];
+	int totalButtonsPressed = 0;
+	int recentButtonsPressed = 0;
+	int totalButtonFrames = 0;
+	int currentButtonFrame = 0;
+
+
+
 	checkBox* detailed;
 	TextButton* switchTabs;
 
-	Label currentAPM;
-	Label recentAPM;
+	std::unique_ptr<Label> totalAPMLabel;
+	std::unique_ptr<Label> recentAPMLabel;
+
+	double recentAPM = 0.0;
+	double totalAPM = 0.0;
 
 	//Key MouseMovement;
 

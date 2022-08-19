@@ -35,6 +35,13 @@ ButtonDisplay::ButtonDisplay(sf::RenderWindow* windowPtr, sf::Font& bst, checkBo
 	tempPos = { 596, 84 };
 	block = std::make_unique<checkBox>("", tempPos, bst, 0, "rightClick.png", spriteSize);
 
+	tempPos = { 276, 100 };
+	recentAPMLabel = std::make_unique<Label>(tempPos, 24, "Recent APM : ", 4, bst);
+	tempPos = { 297, 120 };
+	totalAPMLabel = std::make_unique<Label>(tempPos, 24, "Total APM : ", 4, bst);
+
+
+	//saving this for later, when i figure out how to do it properly
 	//bigCircleText.loadFromFile("circle.png");
 	//smallCircleText.loadFromFile("smallCircle.png");
 
@@ -54,15 +61,89 @@ void ButtonDisplay::resize() {
 
 void ButtonDisplay::update() {
 
-
+	char keyChanges = 0;
 	if (rmbBlock) {
-		flip->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift));
-		block->setChecked(sf::Mouse::isButtonPressed(sf::Mouse::Right));
+		if (flip->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+			flip->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift));
+			keyChanges += flip->getChecked();
+		}
+		if (block->getChecked() != sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+			block->setChecked(sf::Mouse::isButtonPressed(sf::Mouse::Right));
+			keyChanges += block->getChecked();
+		}
 	}
 	else {
-		flip->setChecked(sf::Mouse::isButtonPressed(sf::Mouse::Right));
-		block->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift));
+		if (flip->getChecked() != sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+			flip->setChecked(sf::Mouse::isButtonPressed(sf::Mouse::Right));
+			keyChanges += flip->getChecked();
+		}
+		if (block->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+			block->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift));
+			keyChanges += block->getChecked();
+		}
 	}
+
+	if (attack->getChecked() != sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+		attack->setChecked(sf::Mouse::isButtonPressed(sf::Mouse::Left));
+		keyChanges += attack->getChecked();
+	}
+	if (forward->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+		forward->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::W));
+		keyChanges += forward->getChecked();
+	}
+	if (left->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+		left->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::A));
+		keyChanges += left->getChecked();
+	}
+	if (back->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+		back->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::S));
+		keyChanges += back->getChecked();
+	}
+	if (right->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+		right->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::D));
+		keyChanges += right->getChecked();
+	}
+	if (jump->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+		jump->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
+		keyChanges += jump->getChecked();
+	}
+
+	totalButtonsPressed += keyChanges;
+	if (totalButtonFrames < 15000) {
+		totalAPM = totalButtonsPressed * 15000 / (totalButtonFrames + 1);
+		recentAPM = totalAPM;
+		recentButtonsPressed = totalButtonsPressed;
+	}
+	else {
+		//std::cout << "old : new  ~ " << +apmArray[currentButtonFrame] << ":" << +keyChanges << std::endl;
+		recentButtonsPressed += (keyChanges - apmArray[currentButtonFrame]);
+		recentAPM = recentButtonsPressed;
+		totalAPM = totalButtonsPressed * 15000 / (totalButtonFrames + 1);
+	}
+
+	int tempRecentAPM = recentAPM;
+	int tempTotalAPM = totalAPM;
+
+	std::string tempString = "Recent APM : ";
+	tempString += std::to_string(tempRecentAPM);
+	recentAPMLabel->setText(tempString);
+
+	tempString = "Total APM : ";
+	tempString += std::to_string(tempTotalAPM);
+	totalAPMLabel->setText(tempString);
+
+	//std::cout << "Total Buttons Pressed : " << totalButtonsPressed << " ~ ";
+	//std::cout << " Recent Buttons Pressed : " << recentButtonsPressed << std::endl;
+	//std::cout << "recent : total : " << recentAPM << ":" << totalAPM << std::endl;
+
+	apmArray[currentButtonFrame] = keyChanges;
+	currentButtonFrame++;
+	totalButtonFrames++;
+	if (currentButtonFrame == 15000) {
+		//std::cout << "reset?" << std::endl;
+		currentButtonFrame = 0;
+	}
+
 
 	/* for a later date, can't get this to work properly
 	if (hasFocus) {
@@ -101,15 +182,6 @@ void ButtonDisplay::update() {
 		smallCircle.setPosition(spriteCenter - (mouseDiff * 2.f));
 	}
 	*/
-
-	attack->setChecked(sf::Mouse::isButtonPressed(sf::Mouse::Left));
-
-	forward->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::W));
-	left->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::A));
-	back->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::S));
-	right->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::D));
-
-	jump->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
 	
 
 	sf::Event event;
@@ -179,4 +251,7 @@ void ButtonDisplay::draw() {
 
 	window->draw(bigCircle);
 	window->draw(smallCircle);
+
+	recentAPMLabel->drawTo(*window);
+	totalAPMLabel->drawTo(*window);
 }
