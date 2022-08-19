@@ -1,14 +1,30 @@
 #include "main.h"
+
+//SFML
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
-#include "TextButton.h"
-#include <math.h>
 #include <SFML/Audio.hpp>
+
+//SFML extension (mine)
+#include "TextButton.h"
+
+//program files
+#include "TbfTrainer.h"
+#include "ButtonDisplay.h"
+
+//std
+#include <math.h>
 #include <chrono>
+#include <format>
+
+
 
 const int mainWidth = 400;
 const int mainHeight = 500;
 #define LOGIC_TIME .004f
+
+// main() for DEBUG mode
+// WinMain() for RELEASE mode
 
 int WinMain()
 {
@@ -18,94 +34,63 @@ int WinMain()
 	sf::Font bst;
 	bst.loadFromFile("bahnschrift.ttf");
 
-	sf::SoundBuffer metronome;
-	if (!metronome.loadFromFile("metronome.wav")) {
-		std::cout << "failed to load sound";
-		return -1;
-	}
-	sf::Sound sound;
-	sound.setBuffer(metronome);
 
 
 	sf::Clock fpsTimer;
 	float fpsElapsed = 0;
 
-	bool leftClickInit = false;
-	bool rightClickInit = false;
-
 	bool gender = true; //female is true, male is false
 
-	bool jumpActive = false;
-	bool slashActive = false;
-	bool blockActive = false;
-	//bool failPossible = false;
-	bool metronomeActive = false;
-	bool idleActive = false;
-	bool jumpInit = false;
-
-	bool instantJumpReset = false;
-
-	int slashCounter = 0;
-	int blockRelCounter = 0;
-	int blockRecovery = 0;
-	//int failCounter = 0;
-	int timeBetween = 0;
-	int idleCounter = 0;
+	bool detailedActive = false;
 
 	float logicTime = 0.0f;
 
 	int averageCounter = 0;
 	int averageSpeed = 0;
 
-	int jumpCounter = 0;
+	//Label(sf::Vector2f pos, int fontSz, std::string string, char relation, sf::Font& font, sf::Vector2f relationSize);
 
-	int metronomeCounter = 0;
+	sf::Vector2f tempPos = { mainWidth - 50, 0 };
+	sf::Vector2f tempRel = { 50,0 };
+	Label FPSLabel(tempPos, 24, "FPS : ", 0, bst, tempRel);
+	Label FPSCounter(tempPos, 24, "0", 4, bst, tempRel);
 
-	int metronomeReset = 75;
-
-	Label slashDown({ mainWidth - 50, 180 }, 24, "left click up", 0, bst);
-	Label slashTimeL({ mainWidth - 50,180 }, 24, "0", 4, bst);
-	Label blockDown({ mainWidth - 50, 200 }, 24, "right click up", 0, bst);
-	Label blockTimeL({ mainWidth - 50, 200 }, 24, "0", 4, bst);
-
-
-
-	Label FPSLabel({ mainWidth - 50, 0}, 24, "FPS : ", 0, bst, { 50,0 });
-	Label FPSCounter({ mainWidth - 50, 0}, 24, "0", 4, bst);
-
-
-	checkBox jumpReset("instant jump reset", { mainWidth - 50, 260}, bst);
-	jumpReset.setPosition({ mainWidth - 50, 260 }, 0);
-	Label jumpSlashLabel({ mainWidth - 50,280 }, 24, "Time between jump/slash : ", 0, bst);
-	Label jumpSlash({ mainWidth - 50,280 }, 24, "0", 4, bst);
-
-	Label betweenLabel({ mainWidth - 50,300 }, 24, "Time between slash/block : ", 0, bst);
-	Label timeBetweenSB({ mainWidth - 50,300 }, 24, "0", 4, bst);
-
-	Label currentSpeedLabel({ mainWidth - 50,400 }, 24, "Current Speed : ", 0, bst);
-	Label currentSpeed({ mainWidth - 50, 400 }, 24, "0", 4, bst);
-
-	Label timeIdleSlashLabel({ mainWidth - 50,340 }, 24, "Time between block drop and slash : ", 0, bst);
-	Label timeIdleSlash({ mainWidth - 50,340 }, 24, "0", 4, bst);
-
-	Textbox metronomeSpeed({ mainWidth - 50,80 }, 18, { 40,20 }, sf::Color::White, 3, "200", true);
-	metronomeSpeed.setFont(bst);
-	checkBox metronomeCheck("metronome", { mainWidth - 50, 100 }, bst);
-	metronomeCheck.setPosition({ mainWidth - 50,95 }, 0);
+	tempPos = { 0,0 };
+	tempRel = { 0,0 };
+	Label averageFrameLabel(tempPos, 24, "Average Frame : ", 4, bst, tempPos);
+	tempPos = { 0, 24 };
+	Label peakFrameLabel(tempPos, 24, "Peak Frame : ", 4, bst, tempRel);
+	tempPos = { 0,48 };
+	Label minFrameLabel(tempPos, 24, "Min Frame : ", 4, bst, tempRel);
+	tempPos = { 0,72 };
+	Label currentFrameLabel(tempPos, 24, "Min Frame : ", 4, bst, tempRel);
 
 
-	Label SlashFailLabel({ mainWidth - 60, 140 }, 24, "slash : ", 0, bst);
-	Label SlashFail({ mainWidth - 60, 140 }, 24, "fail", 4, bst);
+	//checkBox(std::string string, sf::Vector2f pos, sf::Font& font, char relation, sf::Vector2f posDif);
+	tempPos = { mainWidth - 80,25 };
+	tempRel = { 20,0 };
+	checkBox detailed("Details", tempPos, bst, 2, tempRel);
 
-	Label AverageLabel({ mainWidth - 50,420 }, 24, "Average Speed : ", 0, bst);
-	Label AverageSpeed({ mainWidth - 50, 420 }, 24, "0", 4, bst);
+	char currentTab = 0;
 
+	TextButton switchTabs("Switch Tabs", { 5,100 }, 24, sf::Color::Black, sf::Color::Red, bst, 2);
 
+	/*
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 		slashDown.setText("left click down");
 	}
+	*/
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
+	float totalFrameTime = 0.0f;
+	float averageFrameTime = 0.0f;
+	int framesCounted = 0;
+	float peakFrameTime = 0.0f;
+	float minFrameTime = 1.0f;
+
+	//(sf::RenderWindow *windowPtr, sf::Font &bst, checkBox *detailBox, bool *detailedBool, TextButton *tabSwitcher, char *tabChar);
+	TbfTrainer tbfTrainer(&mainWindow, bst, &detailed, detailedActive, &switchTabs);
+	ButtonDisplay buttonDisplay(&mainWindow, bst, &detailed, detailedActive, &switchTabs);
 
 	while (mainWindow.isOpen())
 	{
@@ -117,190 +102,104 @@ int WinMain()
 
 		if (logicTime >= LOGIC_TIME) {
 			//std::cout << "logic loop : " << logicTime << std::endl;
+			if ((framesCounted % 2500) == 0) {
+				totalFrameTime = 0;
+				framesCounted = 0;
+				peakFrameTime = 0;
+				minFrameTime = 1.0f;
+			}
+
+			totalFrameTime += logicTime;
+			framesCounted++;
+			averageFrameTime = totalFrameTime / framesCounted;
+			if (logicTime > peakFrameTime) {
+				peakFrameTime = logicTime;
+			}
+			if (logicTime < minFrameTime) {
+				minFrameTime = logicTime;
+			}
+
+			std::string bufferString = "Average Frame : " + std::format("{:.4f}", averageFrameTime);
+			averageFrameLabel.setText(bufferString);
+			bufferString = "Peak Frame : " + std::format("{:.4f}", peakFrameTime);
+			peakFrameLabel.setText(bufferString);
+			bufferString = "Min Frame : " + std::format("{:.4f}", minFrameTime);
+			minFrameLabel.setText(bufferString);
+			bufferString = "Current Frame : " + std::format("{:.4f}", logicTime);
+			currentFrameLabel.setText(bufferString);
+
 			logicTime -= LOGIC_TIME;
 
-			idleCounter += idleActive;
-			slashCounter += slashActive;
-			blockRelCounter += sf::Mouse::isButtonPressed(sf::Mouse::Right) * blockActive;
-			jumpCounter += jumpActive;
+	
 			//if (jumpInit) { std::cout << "jumpcounter after:jumpreset:jumpinit:jumpActive : " << jumpCounter << ":" << instantJumpReset << ":" << jumpInit << ":" << jumpActive << std::endl; }
 
-			metronomeCounter++;
-			if (metronomeCounter >= metronomeReset && metronomeCheck.getChecked()) {
-				sound.play();
-				metronomeCounter = 0;
-			}
 
+			//std::cout << "currentTab : " << +currentTab << std::endl;
 			FPSCounter.setText(std::to_string(static_cast<int>(round(1000000 / fpsTimer.restart().asMicroseconds()))));
+			if (currentTab == 0) {
+				tbfTrainer.update();
 
-			//SlashFail.setText(std::to_string(failPossible));
-
-			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-
-				slashDown.setText("left click down");
-
-				if (!blockActive && !slashActive && !leftClickInit && !sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-					slashActive = true;
-					slashCounter = 0;
-
-					if (instantJumpReset && jumpActive) {
-						jumpSlash.setText(std::to_string(jumpCounter));
-						//std::cout << "why here" << std::endl;
-						jumpActive = false;
-					}
-					else if (jumpActive) {
-						jumpSlash.setText(std::to_string(jumpCounter));
-					}
-					if (idleActive) {
-						idleActive = false;
-						timeIdleSlash.setText(std::to_string(idleCounter));
-						timeIdleSlash.setTextColor(sf::Color::Black);
-					}
-				}
-				else if (blockActive && !leftClickInit) {
-					timeIdleSlash.setText(std::to_string(blockRecovery));
-					timeIdleSlash.setTextColor(sf::Color::Red);
+				detailedActive = tbfTrainer.detailedActive;
+				buttonDisplay.detailedActive = detailedActive;
+				
+				if (tbfTrainer.currentTab != currentTab) {
+					currentTab = tbfTrainer.currentTab;
+					buttonDisplay.currentTab = currentTab;
+					buttonDisplay.resize();
 				}
 
-				leftClickInit = true;
+				mainWindow.clear(sf::Color::White);
+
+				tbfTrainer.draw();
+
+				switchTabs.draw(mainWindow); 
+				detailed.draw(mainWindow);
+
+				if (detailedActive) {
+					averageFrameLabel.drawTo(mainWindow);
+					peakFrameLabel.drawTo(mainWindow);
+					minFrameLabel.drawTo(mainWindow);
+					currentFrameLabel.drawTo(mainWindow);
+					FPSLabel.drawTo(mainWindow);
+					FPSCounter.drawTo(mainWindow);
+				}
+
+				mainWindow.display();
+
 			}
-			else {
-				slashDown.setText("left click up");
-				if (leftClickInit) {
-					slashTimeL.setText(std::to_string(slashCounter));
+			if (currentTab == 1) {
+
+				buttonDisplay.update();
+
+				detailedActive = buttonDisplay.detailedActive;
+				tbfTrainer.detailedActive = detailedActive;
+
+				if (buttonDisplay.currentTab != currentTab) {
+					currentTab = buttonDisplay.currentTab;
+					tbfTrainer.currentTab = currentTab;
+					tbfTrainer.resize();
 				}
-				leftClickInit = slashActive;
-				if (slashCounter > 145) {
-					slashActive = false;
+
+				mainWindow.clear(sf::Color::White);
+
+				buttonDisplay.draw();
+				
+				switchTabs.draw(mainWindow);
+				detailed.draw(mainWindow);
+
+				if (detailedActive) {
+					averageFrameLabel.drawTo(mainWindow);
+					peakFrameLabel.drawTo(mainWindow);
+					minFrameLabel.drawTo(mainWindow);
+					currentFrameLabel.drawTo(mainWindow);
+					FPSLabel.drawTo(mainWindow);
+					FPSCounter.drawTo(mainWindow);
 				}
+
+
+				mainWindow.display();
 			}
-
-
-			if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-				blockDown.setText("right click down");
-
-				if (!blockActive && !rightClickInit) {
-					blockRecovery = 0;
-					blockRelCounter = 0;
-					blockActive = true;
-					if (!slashActive) {
-						SlashFail.setText("fail");
-						SlashFail.setTextColor(sf::Color::Red);
-					}
-					else {
-						timeBetweenSB.setText(std::to_string(slashCounter));
-						SlashFail.setText("pass");
-						SlashFail.setTextColor(sf::Color::Black);
-					}
-
-					slashActive = false;
-				}
-
-				rightClickInit = true;
-			}
-			else {
-				if (rightClickInit && blockActive) {
-					blockTimeL.setText(std::to_string(blockRelCounter));
-				}
-
-				blockDown.setText("right click up");
-				blockRecovery += blockActive;
-				if (blockRecovery >= 60) {
-
-					currentSpeed.setText(std::to_string((250 * 60) / (idleCounter + slashCounter + blockRelCounter + 59 + gender)));
-					averageCounter++;
-					averageSpeed += (250 * 60) / (idleCounter + slashCounter + blockRelCounter + 59 + gender);
-					//averageSpeed = ((averageSpeed * averageCounter - 1) + (250 * 60) / (idleCounter + slashCounter + blockRelCounter + 59 + gender)) / averageCounter;
-					AverageSpeed.setText(std::to_string(averageSpeed / averageCounter));
-					blockRecovery = 0;
-					blockActive = false;
-					rightClickInit = false;
-					idleActive = true;
-					idleCounter = 0;
-				}
-			}
-
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && !jumpInit) {
-				std::cout << "entered jump activation" << std::endl;
-				jumpInit = true;
-				jumpActive = true;
-				jumpCounter = 0;
-			}
-			else if (jumpCounter >= 185 || (!jumpActive && instantJumpReset && !sf::Keyboard::isKeyPressed(sf::Keyboard::Space))) {
-				jumpInit = false;
-			}
-
-
-			sf::Event event;
-			while (mainWindow.pollEvent(event))
-			{
-				switch (event.type) {
-				case sf::Event::Closed: {
-					mainWindow.close();
-					break;
-				}
-
-
-				case sf::Event::MouseButtonPressed: {
-					if (event.mouseButton.button == sf::Mouse::Left) {
-						metronomeCheck.isMouseOver(mainWindow);
-						if (metronomeCheck.getChecked()) {
-							metronomeReset = 60 * 250 / stoi(metronomeSpeed.getText());
-						}
-						jumpReset.isMouseOver(mainWindow);
-						instantJumpReset = jumpReset.getChecked();
-
-						//metronomeSpeed.setActivity(metronomeSpeed.isMouseOver(mainWindow));
-						metronomeSpeed.isMouseOver(mainWindow);
-
-					}
-					break;
-				}
-				case sf::Event::TextEntered: {
-					metronomeSpeed.typedOn(event);
-				}
-				default: {
-					break;
-				}
-				}
-			}
-			mainWindow.clear(sf::Color::White);
-
-			//slashPMButt.draw(mainWindow);
-
-			slashDown.drawTo(mainWindow);
-			slashTimeL.drawTo(mainWindow);
-			blockDown.drawTo(mainWindow);
-			blockTimeL.drawTo(mainWindow);
-
-			FPSLabel.drawTo(mainWindow);
-			FPSCounter.drawTo(mainWindow);
-
-
-			timeBetweenSB.drawTo(mainWindow);
-			betweenLabel.drawTo(mainWindow);
-
-			currentSpeedLabel.drawTo(mainWindow);
-			currentSpeed.drawTo(mainWindow);
-
-			AverageLabel.drawTo(mainWindow);
-			AverageSpeed.drawTo(mainWindow);
-
-			SlashFail.drawTo(mainWindow);
-			SlashFailLabel.drawTo(mainWindow);
-
-			timeIdleSlash.drawTo(mainWindow);
-			timeIdleSlashLabel.drawTo(mainWindow);
-
-			metronomeSpeed.drawTo(mainWindow);
-			metronomeCheck.draw(mainWindow);
-
-			jumpSlash.drawTo(mainWindow);
-			jumpSlashLabel.drawTo(mainWindow);
-			jumpReset.draw(mainWindow);
-
-			mainWindow.display();
-
+		
 		}
 
 
