@@ -11,6 +11,7 @@
 //program files
 #include "TbfTrainer.h"
 #include "ButtonDisplay.h"
+#include "StreamingMode.h"
 
 //std
 #include <math.h>
@@ -91,6 +92,7 @@ int WinMain()
 	//(sf::RenderWindow *windowPtr, sf::Font &bst, checkBox *detailBox, bool *detailedBool, TextButton *tabSwitcher, char *tabChar);
 	TbfTrainer tbfTrainer(&mainWindow, bst, &detailed, detailedActive, &switchTabs);
 	ButtonDisplay buttonDisplay(&mainWindow, bst, &detailed, detailedActive, &switchTabs);
+	StreamingMode streamingMode(&mainWindow, bst, &detailed, detailedActive, &switchTabs);
 
 	while (mainWindow.isOpen())
 	{
@@ -145,6 +147,7 @@ int WinMain()
 				if (tbfTrainer.currentTab != currentTab) {
 					currentTab = tbfTrainer.currentTab;
 					buttonDisplay.currentTab = currentTab;
+					streamingMode.currentTab = currentTab;
 					buttonDisplay.resize();
 				}
 
@@ -177,7 +180,8 @@ int WinMain()
 				if (buttonDisplay.currentTab != currentTab) {
 					currentTab = buttonDisplay.currentTab;
 					tbfTrainer.currentTab = currentTab;
-					tbfTrainer.resize();
+					streamingMode.currentTab = currentTab;
+					streamingMode.resize();
 				}
 
 				mainWindow.clear(sf::Color::White);
@@ -198,6 +202,24 @@ int WinMain()
 
 
 				mainWindow.display();
+			}
+			if (currentTab == 2) {
+				streamingMode.update();
+
+				if (streamingMode.currentTab != currentTab) {
+					currentTab = streamingMode.currentTab;
+					tbfTrainer.currentTab = currentTab;
+					buttonDisplay.currentTab = currentTab;
+					tbfTrainer.resize();
+				}
+
+				mainWindow.clear(sf::Color::White);
+
+				streamingMode.draw();
+				
+				mainWindow.display();
+
+				
 			}
 		
 		}

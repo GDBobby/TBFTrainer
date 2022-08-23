@@ -23,6 +23,7 @@ public:
 
 private:
 	sf::RenderWindow *window;
+	sf::SoundBuffer metronome;
 	sf::Sound sound;
 
 	checkBox* detailed;

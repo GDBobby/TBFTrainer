@@ -78,7 +78,11 @@ public:
 
 	void setSelected(bool sel);
 
+	void setBoxTrans() { textRect.setOutlineColor(sf::Color::Transparent); };
+
 	void setActivity(bool activity) { isActive = activity; }
+
+	void setTextColor(sf::Color color) { textbox.setFillColor(color); };
 
 	std::string getText() { return textbox.getString(); }
 
@@ -94,22 +98,23 @@ class TextboxWLabel {
 private:
 
 public:
-	Label label;
-	Textbox textbox;
+	std::unique_ptr<Label> label;
+	std::unique_ptr<Textbox> textbox;
 	//Textbox(sf::Vector2f pos, int fontSize, sf::Vector2f boxSize, sf::Color color, int limitInit, std::string string = "") {
 	//Label(sf::Vector2f pos, int fontSz, std::string string, char relation, sf::Font &font, sf::Vector2f relationSize = { 100,0 }) {
 
-	TextboxWLabel(sf::Vector2f pos, int fontSize, sf::Font& font, std::string labstring, std::string boxstring, sf::Vector2f boxSize, sf::Color color, int limitInit, char relation) {
+	TextboxWLabel(sf::Vector2f pos, int fontSize, sf::Font& font, std::string labstring, std::string boxstring, sf::Vector2f boxSize, sf::Color color, int limitInit, char relation, sf::Vector2f relSize) {
 
-		label = Label(pos, fontSize, labstring, relation, font, boxSize);
-		textbox = Textbox(pos, fontSize, font, boxSize, color, limitInit, boxstring);
+		label = std::make_unique<Label>(pos, fontSize, labstring, relation, font, relSize);
+		textbox = std::make_unique<Textbox>(pos, fontSize, font, boxSize, color, limitInit, boxstring);
+		textbox->setBoxTrans();
 
 	}
 
 
 	void draw(sf::RenderWindow& window) {
-		label.drawTo(window);
-		textbox.drawTo(window);
+		label->drawTo(window);
+		textbox->drawTo(window);
 	}
 
 };

@@ -202,8 +202,7 @@ void ButtonDisplay::update() {
 					detailedActive = !detailedActive;
 				}
 				if (switchTabs->isMouseOver(*window)) {
-					std::cout << "switching tabs?" << std::endl;
-					currentTab = 0;
+					currentTab = 2;
 				}
 				forward->isMouseOver(*window);
 
@@ -216,7 +215,6 @@ void ButtonDisplay::update() {
 			break;
 		}
 		case sf::Event::LostFocus:{
-			std::cout << "lost focus" << std::endl;
 			hasFocus = false;
 			mouseUpdate = true;
 			mouseUpdateFrames = 0;
@@ -226,7 +224,6 @@ void ButtonDisplay::update() {
 		}
 		case sf::Event::GainedFocus: {
 			hasFocus = true;
-			std::cout << "gained focus" << std::endl;
 			break;
 		}
 

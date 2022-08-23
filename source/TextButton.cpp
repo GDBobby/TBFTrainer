@@ -33,7 +33,7 @@ void Label::setPosition(sf::Vector2f pos, char relation, sf::Vector2f posDif = {
 
 	case 1:
 		//above
-		label.setPosition({ pos.x,pos.y - 20 });
+		label.setPosition({ pos.x,pos.y - posDif.y });
 		break;
 
 	case 2:
@@ -43,7 +43,7 @@ void Label::setPosition(sf::Vector2f pos, char relation, sf::Vector2f posDif = {
 
 	case 3:
 		//below
-		label.setPosition({ pos.x,pos.y + 20 });
+		label.setPosition({ pos.x,pos.y + posDif.y });
 		break;
 	case 4:
 		//no adjust

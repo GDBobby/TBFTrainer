@@ -8,7 +8,7 @@ TbfTrainer::TbfTrainer(sf::RenderWindow* windowPtr, sf::Font& bst, checkBox* det
 
 	//sf::Font bst = font;
 
-	sf::SoundBuffer metronome;
+	
 	if (!metronome.loadFromFile("metronome.wav")) {
 		std::cout << "failed to load sound";
 		window->close();
@@ -83,7 +83,7 @@ void TbfTrainer::update() {
 
 	metronomeCounter++;
 	if ((metronomeCounter >= metronomeReset) && metronomeCheck->getChecked()) {
-		std::cout << "sound play" << std::endl;
+		//std::cout << "sound play" << std::endl;
 		sound.play();
 		metronomeCounter = 0;
 	}
