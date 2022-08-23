@@ -109,7 +109,7 @@ void ButtonDisplay::update() {
 	}
 
 	totalButtonsPressed += keyChanges;
-	if (totalButtonFrames < 15000) {
+	if (totalButtonFrames < ARRAYSIZE) {
 		totalAPM = totalButtonsPressed * 15000 / (totalButtonFrames + 1);
 		recentAPM = totalAPM;
 		recentButtonsPressed = totalButtonsPressed;
@@ -139,7 +139,7 @@ void ButtonDisplay::update() {
 	apmArray[currentButtonFrame] = keyChanges;
 	currentButtonFrame++;
 	totalButtonFrames++;
-	if (currentButtonFrame == 15000) {
+	if (currentButtonFrame == ARRAYSIZE) {
 		//std::cout << "reset?" << std::endl;
 		currentButtonFrame = 0;
 	}

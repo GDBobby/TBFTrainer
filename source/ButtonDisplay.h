@@ -6,6 +6,8 @@
 #include <SFML/Audio.hpp>
 
 
+#define ARRAYSIZE 7500
+
 class ButtonDisplay
 {
 public:
@@ -29,7 +31,7 @@ private:
 	bool mouseUpdate = false;
 	char mouseUpdateFrames = 0;
 
-	char apmArray[15000];
+	char apmArray[ARRAYSIZE];
 	int totalButtonsPressed = 0;
 	int recentButtonsPressed = 0;
 	int totalButtonFrames = 0;
