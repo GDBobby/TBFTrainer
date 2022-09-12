@@ -42,7 +42,7 @@ ButtonDisplay::ButtonDisplay(sf::RenderWindow* windowPtr, sf::Font& bst, checkBo
 	*/
 
 	//switchTabs("Switch Tabs", { 5,100 }, 24, sf::Color::Black, sf::Color::Red, bst, 2);
-	resetButton = std::make_unique<TextButton>("Reset", tempPos, 18, sf::Color::White, sf::Color::Black, bst, 2);
+	resetButton = std::make_unique<TextButton>("Reset", tempPos, 18, sf::Color::White, sf::Color::Black, bst, 1);
 
 
 	tempPos = { 276, 100 };
