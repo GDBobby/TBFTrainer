@@ -315,6 +315,10 @@ public:
 	void setPosition(sf::Vector2f pos, char relation, sf::Vector2f posDif);
 	void setChecked(bool checked);
 
+	void setSpriteColor(sf::Color color) {
+		uncheckedSprite.setColor(color);
+	}
+
 	void isMouseOver(sf::RenderWindow& window);
 	void draw(sf::RenderWindow& window);
 

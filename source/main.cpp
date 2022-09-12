@@ -74,7 +74,7 @@ int WinMain()
 
 	char currentTab = 0;
 
-	TextButton switchTabs("Switch Tabs", { 5,100 }, 24, sf::Color::Black, sf::Color::Red, bst, 2);
+	TextButton switchTabs("Switch Tabs", { 5,0 }, 24, sf::Color::Black, sf::Color::Red, bst, 2);
 
 	/*
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -156,7 +156,7 @@ int WinMain()
 				tbfTrainer.draw();
 
 				switchTabs.draw(mainWindow); 
-				detailed.draw(mainWindow);
+				//detailed.draw(mainWindow);
 
 				if (detailedActive) {
 					averageFrameLabel.drawTo(mainWindow);
@@ -189,7 +189,7 @@ int WinMain()
 				buttonDisplay.draw();
 				
 				switchTabs.draw(mainWindow);
-				detailed.draw(mainWindow);
+				//detailed.draw(mainWindow);
 
 				if (detailedActive) {
 					averageFrameLabel.drawTo(mainWindow);

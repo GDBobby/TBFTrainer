@@ -22,8 +22,6 @@ public:
 private:
 	sf::RenderWindow* window;
 
-	bool rmbBlock = true;
-
 	bool hasFocus = true;
 
 	sf::Vector2f spriteCenter = { 596 - 8, 356 - 8 };
@@ -37,7 +35,21 @@ private:
 	int totalButtonFrames = 0;
 	int currentButtonFrame = 0;
 
+	sf::Color colorMaskW = { 0,0,0};
+	sf::Color colorMaskA = { 0,0,0 };
+	sf::Color colorMaskS = { 0,0,0 };
+	sf::Color colorMaskD = { 0,0,0 };
 
+	int directionTracker = 0;
+	int forwardTracker = 0;
+	int leftTracker = 0;
+	int rightTracker = 0;
+	int backTracker = 0;
+
+	int slashTracker = 0;
+	int blockTracker = 0;
+	int jumpTracker = 0;
+	int flipTracker = 0;
 
 	checkBox* detailed;
 	TextButton* switchTabs;
@@ -60,6 +72,8 @@ private:
 
 	std::unique_ptr<checkBox> attack;
 	std::unique_ptr<checkBox> block;
+
+	std::unique_ptr<TextButton> resetButton;
 
 
 	sf::Texture bigCircleText;
