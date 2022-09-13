@@ -36,20 +36,33 @@ ButtonDisplay::ButtonDisplay(sf::RenderWindow* windowPtr, sf::Font& bst, checkBo
 	block = std::make_unique<checkBox>("", tempPos, bst, 0, "rightClick.png", spriteSize);
 
 	
-	tempPos = { 320,0 };
-	/*
-	checkBox detailed("Details", tempPos, bst, 2, tempRel);
-	*/
-
-	//switchTabs("Switch Tabs", { 5,100 }, 24, sf::Color::Black, sf::Color::Red, bst, 2);
+	tempPos = { 320,0 };	
 	resetButton = std::make_unique<TextButton>("Reset", tempPos, 18, sf::Color::White, sf::Color::Black, bst, 1);
-
+	tempPos = { 420, 0 };
+	printButton = std::make_unique<TextButton>("Print", tempPos, 18, sf::Color::White, sf::Color::Black, bst, 1);
 
 	tempPos = { 276, 100 };
 	recentAPMLabel = std::make_unique<Label>(tempPos, 24, "Recent APM : ", 4, bst);
 	tempPos = { 297, 120 };
 	totalAPMLabel = std::make_unique<Label>(tempPos, 24, "Total APM : ", 4, bst);
 
+	tempPos = { 420, 240 };
+	WPrinter = std::make_unique<Label>(tempPos, 18, "", 4, bst);
+	tempPos.y += 20;
+	APrinter = std::make_unique<Label>(tempPos, 18, "", 4, bst);
+	tempPos.y += 20;
+	SPrinter = std::make_unique<Label>(tempPos, 18, "", 4, bst);
+	tempPos.y += 20;
+	DPrinter = std::make_unique<Label>(tempPos, 18, "", 4, bst);
+
+	tempPos = { 600, 240 };
+	WHeldPrinter = std::make_unique<Label>(tempPos, 18, "", 4, bst);
+	tempPos.y += 20;
+	AHeldPrinter = std::make_unique<Label>(tempPos, 18, "", 4, bst);
+	tempPos.y += 20;
+	SHeldPrinter = std::make_unique<Label>(tempPos, 18, "", 4, bst);
+	tempPos.y += 20;
+	DHeldPrinter = std::make_unique<Label>(tempPos, 18, "", 4, bst);
 
 	//saving this for later, when i figure out how to do it properly
 	//bigCircleText.loadFromFile("circle.png");
@@ -102,9 +115,14 @@ void ButtonDisplay::update() {
 			keyChanges++;
 			directionTracker++;
 			forwardTracker++;
-
+			forwardHoldTracker++;
+			directionHoldTracker++;
 			//std::cout << "colorMaskW.b : " << colorMaskW.b << std::endl;
 		}
+	}
+	else if (forward->getChecked()) {
+		forwardHoldTracker++;
+		directionHoldTracker++;
 	}
 	if (left->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
 		left->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::A));
@@ -112,9 +130,15 @@ void ButtonDisplay::update() {
 			keyChanges++;
 			directionTracker++;
 			leftTracker++;
+			leftHoldTracker++;
+			directionHoldTracker++;
 
 			//std::cout << "colorMaskA.b : " << colorMaskA.b << std::endl;
 		}
+	}
+	else if (left->getChecked()) {
+		leftHoldTracker++;
+		directionHoldTracker++;
 	}
 	if (back->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
 		back->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::S));
@@ -122,8 +146,14 @@ void ButtonDisplay::update() {
 			keyChanges++;
 			directionTracker++;
 			backTracker++;
+			backHoldTracker++;
+			directionHoldTracker++;
 			//std::cout << "colorMaskS.b : " << colorMaskS.b << std::endl;
 		}
+	}
+	else if (back->getChecked()) {
+		backHoldTracker++;
+		directionHoldTracker++;
 	}
 	if (right->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
 		right->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::D));
@@ -131,8 +161,14 @@ void ButtonDisplay::update() {
 			keyChanges++;
 			directionTracker++;
 			rightTracker++;
+			rightHoldTracker++;
+			directionHoldTracker++;
 			//std::cout << "colorMaskD.b : " << colorMaskD.b << std::endl;
 		}
+	}
+	else if (right->getChecked()) {
+		rightHoldTracker++;
+		directionHoldTracker++;
 	}
 	if (jump->getChecked() != sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
 		jump->setChecked(sf::Keyboard::isKeyPressed(sf::Keyboard::Space));
@@ -224,34 +260,58 @@ void ButtonDisplay::update() {
 		switch (event.type) {
 		case sf::Event::Closed: {
 			std::ofstream file;
-			file.open("button.log");
-			float percentDirection = 0.0f;
-			percentDirection = static_cast<float>(forwardTracker) / static_cast<float>(directionTracker);
-			int percentPrinter = percentDirection * 1000;
-			int percentDec = percentPrinter % 10;
-			percentPrinter = percentDirection * 100;
+			if (directionTracker > 0) {
+				file.open("button.log");
+				float percentDirection = 0.0f;
+				percentDirection = static_cast<float>(forwardTracker) / static_cast<float>(directionTracker);
+				int percentPrinter = percentDirection * 1000;
+				int percentDec = percentPrinter % 10;
+				percentPrinter = percentDirection * 100;
 
-			file << "W		- " << forwardTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
-			percentDirection = static_cast<float>(leftTracker) / static_cast<float>(directionTracker);
-			percentPrinter = percentDirection * 1000;
-			percentDec = percentPrinter % 10;
-			percentPrinter = percentDirection * 100;
-			file << "A		- " << leftTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
-			percentDirection = static_cast<float>(backTracker) / static_cast<float>(directionTracker);
-			percentPrinter = percentDirection * 1000;
-			percentDec = percentPrinter % 10;
-			percentPrinter = percentDirection * 100;
-			file << "S		- " << backTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
-			percentDirection = static_cast<float>(rightTracker) / static_cast<float>(directionTracker);
-			percentPrinter = percentDirection * 1000;
-			percentDec = percentPrinter % 10;
-			percentPrinter = percentDirection * 100;
-			file << "D		- " << rightTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
-			file << "shift	- " << flipTracker << std::endl;
-			file << "jump	- " << jumpTracker << std::endl;
-			file << "lmb		- " << slashTracker << std::endl;
-			file << "rmb		- " << blockTracker << std::endl << std::endl;
-			file.close();
+				file << "W		- " << forwardTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+				percentDirection = static_cast<float>(leftTracker) / static_cast<float>(directionTracker);
+				percentPrinter = percentDirection * 1000;
+				percentDec = percentPrinter % 10;
+				percentPrinter = percentDirection * 100;
+				file << "A		- " << leftTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+				percentDirection = static_cast<float>(backTracker) / static_cast<float>(directionTracker);
+				percentPrinter = percentDirection * 1000;
+				percentDec = percentPrinter % 10;
+				percentPrinter = percentDirection * 100;
+				file << "S		- " << backTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+				percentDirection = static_cast<float>(rightTracker) / static_cast<float>(directionTracker);
+				percentPrinter = percentDirection * 1000;
+				percentDec = percentPrinter % 10;
+				percentPrinter = percentDirection * 100;
+				file << "D		- " << rightTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+				file << "shift	- " << flipTracker << std::endl;
+				file << "jump	- " << jumpTracker << std::endl;
+				file << "lmb		- " << slashTracker << std::endl;
+				file << "rmb		- " << blockTracker << std::endl;
+
+
+				percentDirection = static_cast<float>(forwardHoldTracker) / static_cast<float>(directionHoldTracker);
+				percentPrinter = percentDirection * 1000;
+				percentDec = percentPrinter % 10;
+				percentPrinter = percentDirection * 100;
+				file << "W Held		- " << forwardHoldTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+				percentDirection = static_cast<float>(leftHoldTracker) / static_cast<float>(directionHoldTracker);
+				percentPrinter = percentDirection * 1000;
+				percentDec = percentPrinter % 10;
+				percentPrinter = percentDirection * 100;
+				file << "A Held		- " << leftHoldTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+				percentDirection = static_cast<float>(backHoldTracker) / static_cast<float>(directionHoldTracker);
+				percentPrinter = percentDirection * 1000;
+				percentDec = percentPrinter % 10;
+				percentPrinter = percentDirection * 100;
+				file << "S Held		- " << backHoldTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+				percentDirection = static_cast<float>(rightHoldTracker) / static_cast<float>(directionHoldTracker);
+				percentPrinter = percentDirection * 1000;
+				percentDec = percentPrinter % 10;
+				percentPrinter = percentDirection * 100;
+				file << "D Held		- " << rightHoldTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl << std::endl;
+				file.close();
+			}
 
 			window->close();
 			break;
@@ -280,6 +340,12 @@ void ButtonDisplay::update() {
 					totalButtonFrames = 0;
 					currentButtonFrame = 0;
 				};
+
+				if (printButton->isMouseOver(*window)) {
+					if (directionTracker > 0) {
+						printTracker();
+					}
+				}
 				//forward->isMouseOver(*window);
 				
 				
@@ -373,10 +439,139 @@ void ButtonDisplay::draw() {
 	block->draw(*window);
 
 	resetButton->draw(*window);
+	printButton->draw(*window);
 
 	window->draw(bigCircle);
 	window->draw(smallCircle);
 
 	recentAPMLabel->drawTo(*window);
 	totalAPMLabel->drawTo(*window);
+
+
+	WPrinter->drawTo(*window);
+	APrinter->drawTo(*window);
+	SPrinter->drawTo(*window);
+	DPrinter->drawTo(*window);
+
+	WHeldPrinter->drawTo(*window);
+	AHeldPrinter->drawTo(*window);
+	SHeldPrinter->drawTo(*window);
+	DHeldPrinter->drawTo(*window);
+}
+
+void ButtonDisplay::printTracker() {
+	float percentDirection = static_cast<float>(forwardTracker) / static_cast<float>(directionTracker);
+	int percentPrinter = percentDirection * 1000;
+	int percentDec = percentPrinter % 10;
+	percentPrinter = percentDirection * 100;
+
+	//WPrinter. << "W		- " << forwardTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+	std::string tempString = "W		- ";
+	tempString += std::to_string(forwardTracker);
+	tempString += " : ";
+	tempString += std::to_string(percentPrinter);
+	tempString += ".";
+	tempString += std::to_string(percentDec);
+	tempString += "%";
+	WPrinter->setText(tempString);
+
+	percentDirection = static_cast<float>(leftTracker) / static_cast<float>(directionTracker);
+	percentPrinter = percentDirection * 1000;
+	percentDec = percentPrinter % 10;
+	percentPrinter = percentDirection * 100;
+
+	tempString = "A		- ";
+	tempString += std::to_string(leftTracker);
+	tempString += " : ";
+	tempString += std::to_string(percentPrinter);
+	tempString += ".";
+	tempString += std::to_string(percentDec);
+	tempString += "%";
+	APrinter->setText(tempString);
+	//file << "A		- " << leftTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+	percentDirection = static_cast<float>(backTracker) / static_cast<float>(directionTracker);
+	percentPrinter = percentDirection * 1000;
+	percentDec = percentPrinter % 10;
+	percentPrinter = percentDirection * 100;
+
+	tempString = "S		- ";
+	tempString += std::to_string(backTracker);
+	tempString += " : ";
+	tempString += std::to_string(percentPrinter);
+	tempString += ".";
+	tempString += std::to_string(percentDec);
+	tempString += "%";
+	SPrinter->setText(tempString);
+	//file << "S		- " << backTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+	percentDirection = static_cast<float>(rightTracker) / static_cast<float>(directionTracker);
+	percentPrinter = percentDirection * 1000;
+	percentDec = percentPrinter % 10;
+	percentPrinter = percentDirection * 100;
+
+	tempString = "D		- ";
+	tempString += std::to_string(rightTracker);
+	tempString += " : ";
+	tempString += std::to_string(percentPrinter);
+	tempString += ".";
+	tempString += std::to_string(percentDec);
+	tempString += "%";
+	DPrinter->setText(tempString);
+
+
+
+
+	percentDirection = static_cast<float>(forwardTracker) / static_cast<float>(directionTracker);
+	percentPrinter = percentDirection * 1000;
+	percentDec = percentPrinter % 10;
+	percentPrinter = percentDirection * 100;
+	tempString = "W Held	- ";
+	tempString += std::to_string(forwardHoldTracker);
+	tempString += " : ";
+	tempString += std::to_string(percentPrinter);
+	tempString += ".";
+	tempString += std::to_string(percentDec);
+	tempString += "%";
+	WHeldPrinter->setText(tempString);
+
+	percentDirection = static_cast<float>(leftHoldTracker) / static_cast<float>(directionHoldTracker);
+	percentPrinter = percentDirection * 1000;
+	percentDec = percentPrinter % 10;
+	percentPrinter = percentDirection * 100;
+
+	tempString = "A Held	- ";
+	tempString += std::to_string(leftHoldTracker);
+	tempString += " : ";
+	tempString += std::to_string(percentPrinter);
+	tempString += ".";
+	tempString += std::to_string(percentDec);
+	tempString += "%";
+	AHeldPrinter->setText(tempString);
+	//file << "A		- " << leftHoldTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+	percentDirection = static_cast<float>(backHoldTracker) / static_cast<float>(directionHoldTracker);
+	percentPrinter = percentDirection * 1000;
+	percentDec = percentPrinter % 10;
+	percentPrinter = percentDirection * 100;
+
+	tempString = "S Held	- ";
+	tempString += std::to_string(backHoldTracker);
+	tempString += " : ";
+	tempString += std::to_string(percentPrinter);
+	tempString += ".";
+	tempString += std::to_string(percentDec);
+	tempString += "%";
+	SHeldPrinter->setText(tempString);
+	//file << "S		- " << backHoldTracker << " : " << percentPrinter << "." << percentDec << "%" << std::endl;
+	percentDirection = static_cast<float>(rightHoldTracker) / static_cast<float>(directionHoldTracker);
+	percentPrinter = percentDirection * 1000;
+	percentDec = percentPrinter % 10;
+	percentPrinter = percentDirection * 100;
+
+	tempString = "D Held	- ";
+	tempString += std::to_string(rightHoldTracker);
+	tempString += " : ";
+	tempString += std::to_string(percentPrinter);
+	tempString += ".";
+	tempString += std::to_string(percentDec);
+	tempString += "%";
+	DHeldPrinter->setText(tempString);
 }

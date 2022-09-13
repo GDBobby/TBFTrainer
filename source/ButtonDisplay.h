@@ -22,6 +22,8 @@ public:
 private:
 	sf::RenderWindow* window;
 
+	void printTracker();
+
 	bool hasFocus = true;
 
 	sf::Vector2f spriteCenter = { 596 - 8, 356 - 8 };
@@ -45,6 +47,12 @@ private:
 	int leftTracker = 0;
 	int rightTracker = 0;
 	int backTracker = 0;
+
+	int directionHoldTracker = 0;
+	int forwardHoldTracker = 0;
+	int leftHoldTracker = 0;
+	int rightHoldTracker = 0;
+	int backHoldTracker = 0;
 
 	int slashTracker = 0;
 	int blockTracker = 0;
@@ -74,7 +82,16 @@ private:
 	std::unique_ptr<checkBox> block;
 
 	std::unique_ptr<TextButton> resetButton;
+	std::unique_ptr<TextButton> printButton;
 
+	std::unique_ptr<Label> WPrinter;
+	std::unique_ptr<Label> APrinter;
+	std::unique_ptr<Label> SPrinter;
+	std::unique_ptr<Label> DPrinter;
+	std::unique_ptr<Label> WHeldPrinter;
+	std::unique_ptr<Label> AHeldPrinter;
+	std::unique_ptr<Label> SHeldPrinter;
+	std::unique_ptr<Label> DHeldPrinter;
 
 	sf::Texture bigCircleText;
 	sf::Texture smallCircleText;

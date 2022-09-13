@@ -76,12 +76,6 @@ int WinMain()
 
 	TextButton switchTabs("Switch Tabs", { 5,0 }, 24, sf::Color::Black, sf::Color::Red, bst, 2);
 
-	/*
-	if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-		slashDown.setText("left click down");
-	}
-	*/
-
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float totalFrameTime = 0.0f;
 	float averageFrameTime = 0.0f;
@@ -89,7 +83,6 @@ int WinMain()
 	float peakFrameTime = 0.0f;
 	float minFrameTime = 1.0f;
 
-	//(sf::RenderWindow *windowPtr, sf::Font &bst, checkBox *detailBox, bool *detailedBool, TextButton *tabSwitcher, char *tabChar);
 	TbfTrainer tbfTrainer(&mainWindow, bst, &detailed, detailedActive, &switchTabs);
 	ButtonDisplay buttonDisplay(&mainWindow, bst, &detailed, detailedActive, &switchTabs);
 	StreamingMode streamingMode(&mainWindow, bst, &detailed, detailedActive, &switchTabs);
@@ -134,9 +127,8 @@ int WinMain()
 
 	
 			//if (jumpInit) { std::cout << "jumpcounter after:jumpreset:jumpinit:jumpActive : " << jumpCounter << ":" << instantJumpReset << ":" << jumpInit << ":" << jumpActive << std::endl; }
-
-
 			//std::cout << "currentTab : " << +currentTab << std::endl;
+
 			FPSCounter.setText(std::to_string(static_cast<int>(round(1000000 / fpsTimer.restart().asMicroseconds()))));
 			if (currentTab == 0) {
 				tbfTrainer.update();
@@ -184,7 +176,7 @@ int WinMain()
 					streamingMode.resize();
 				}
 
-				mainWindow.clear(sf::Color::White);
+				mainWindow.clear(sf::Color::Green);
 
 				buttonDisplay.draw();
 				
