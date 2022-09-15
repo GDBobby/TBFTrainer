@@ -520,7 +520,7 @@ void ButtonDisplay::printTracker() {
 
 
 
-	percentDirection = static_cast<float>(forwardTracker) / static_cast<float>(directionTracker);
+	percentDirection = static_cast<float>(forwardHoldTracker) / static_cast<float>(directionHoldTracker);
 	percentPrinter = percentDirection * 1000;
 	percentDec = percentPrinter % 10;
 	percentPrinter = percentDirection * 100;
